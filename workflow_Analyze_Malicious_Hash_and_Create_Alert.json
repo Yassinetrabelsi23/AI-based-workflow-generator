@@ -1,0 +1,84 @@
+{
+  "name": "Analyze Malicious Hash and Create Alert",
+  "description": "This workflow analyzes a malicious hash using VirusTotal and creates an alert in TheHive if the file is found to be malicious.",
+  "start": "webhook_trigger",
+  "triggers": [
+    {
+      "id": "webhook_trigger",
+      "name": "Wazuh Webhook",
+      "app_name": "Shuffle Tools",
+      "app_version": "1.2.0",
+      "trigger_type": "WEBHOOK",
+      "label": "Wazuh Alert Webhook",
+      "status": "running"
+    }
+  ],
+  "actions": [
+    {
+      "id": "5bd8e2ee-1245-433b-a120-9e42b1bf3502",
+      "name": "get_a_hash_report_",
+      "label": "Check VirusTotal",
+      "app_name": "Virustotal_v3",
+      "app_version": "1.1.0",
+      "app_id": "fa9d7dd6d5e501798870c9451611817f",
+      "action": "get_a_hash_report_",
+      "parameters": [
+        {
+          "name": "resource",
+          "value": "$exec.body.syscheck.sha256_after"
+        }
+      ],
+      "position": {
+        "x": 0,
+        "y": 200
+      }
+    },
+    {
+      "id": "981bc200-5aea-4e73-be3e-8897197070b4",
+      "name": "post_create_case_from_alert",
+      "label": "Create TheHive Case",
+      "app_name": "TheHive5",
+      "app_version": "1.1.0",
+      "app_id": "52052963557bbecd0d85a92b848da4ca",
+      "action": "post_create_case_from_alert",
+      "parameters": [
+        {
+          "name": "title",
+          "value": "Malicious File Detected on $exec.body.agent.name"
+        },
+        {
+          "name": "severity",
+          "value": "3"
+        }
+      ],
+      "position": {
+        "x": 300,
+        "y": 400
+      }
+    }
+  ],
+  "branches": [
+    {
+      "id": "branch_1",
+      "source_id": "action_1",
+      "destination_id": "action_2",
+      "label": "malicious",
+      "has_errors": false,
+      "conditions": [
+        {
+          "condition": {
+            "source": {
+              "type": "value",
+              "value": "$get_a_hash_report_.data.attributes.last_analysis_stats.malicious"
+            },
+            "operator": "LARGER_THAN",
+            "destination": {
+              "type": "value",
+              "value": "0"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
