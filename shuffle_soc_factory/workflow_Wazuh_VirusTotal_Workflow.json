@@ -1,0 +1,128 @@
+{
+  "name": "Wazuh_VirusTotal_Workflow",
+  "description": "Workflow to check file hash against VirusTotal and trigger Wazuh active response if malicious.",
+  "start": "webhook_trigger",
+  "triggers": [
+    {
+      "id": "f2d6d0d0-57bc-4140-9a3a-32fc27d48d56",
+      "name": "Wazuh Webhook",
+      "app_name": "Webhook",
+      "app_version": "1.0.0",
+      "trigger_type": "WEBHOOK",
+      "label": "Wazuh Alert Webhook",
+      "is_valid": true,
+      "environment": "Shuffle",
+      "status": "running",
+      "image": "",
+      "large_image": ""
+    }
+  ],
+  "actions": [
+    {
+      "id": "7975b3f8-19dd-43e2-b20b-06061cea6b3c",
+      "name": "get_a_hash_report_",
+      "label": "Check VirusTotal",
+      "app_name": "Virustotal_v3",
+      "app_version": "1.1.0",
+      "app_id": "fa9d7dd6d5e501798870c9451611817f",
+      "action": null,
+      "parameters": [
+        {
+          "name": "resource",
+          "value": "$exec.body.syscheck.sha256_after"
+        }
+      ],
+      "position": {
+        "x": 0,
+        "y": 200
+      },
+      "is_valid": true,
+      "environment": "Shuffle",
+      "sharing": false,
+      "public": false,
+      "generated": true,
+      "private_id": "fa9d7dd6d5e501798870c9451611817f",
+      "errors": [],
+      "image": "",
+      "large_image": "",
+      "small_image": "",
+      "authentication_id": "",
+      "reference_url": "",
+      "category": "",
+      "category_label": null,
+      "execution_variable": {
+        "description": "",
+        "id": "",
+        "name": "",
+        "value": ""
+      }
+    },
+    {
+      "id": "15638d5b-1a64-4d33-be36-6fc60785be8f",
+      "name": "put_run_command",
+      "label": "Trigger Wazuh Active Response",
+      "app_name": "Wazuh",
+      "app_version": "1.1.0",
+      "app_id": "69fb1e05d07bd1e7dc3abf92317e2d53",
+      "action": null,
+      "parameters": [
+        {
+          "name": "command",
+          "value": "firewall-drop0"
+        },
+        {
+          "name": "alert",
+          "value": "{\"data\":{\"srcip\":\"$exec.body.agent.ip\"}}"
+        }
+      ],
+      "position": {
+        "x": 0,
+        "y": 400
+      },
+      "is_valid": true,
+      "environment": "Shuffle",
+      "sharing": false,
+      "public": false,
+      "generated": true,
+      "private_id": "69fb1e05d07bd1e7dc3abf92317e2d53",
+      "errors": [],
+      "image": "",
+      "large_image": "",
+      "small_image": "",
+      "authentication_id": "",
+      "reference_url": "",
+      "category": "",
+      "category_label": null,
+      "execution_variable": {
+        "description": "",
+        "id": "",
+        "name": "",
+        "value": ""
+      }
+    }
+  ],
+  "branches": [
+    {
+      "id": "branch_1",
+      "source_id": "7975b3f8-19dd-43e2-b20b-06061cea6b3c",
+      "destination_id": "15638d5b-1a64-4d33-be36-6fc60785be8f",
+      "label": "malicious",
+      "has_errors": false,
+      "conditions": [
+        {
+          "condition": {
+            "source": {
+              "type": "value",
+              "value": "$get_a_hash_report_.data.attributes.last_analysis_stats.malicious"
+            },
+            "operator": "LARGER_THAN",
+            "destination": {
+              "type": "value",
+              "value": "0"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

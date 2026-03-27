@@ -1,0 +1,47 @@
+﻿python : Traceback (most 
+recent call last):
+Au caractère Ligne:1 : 1
++ python discover_apps.py 
+2>&1 | Out-File 
+apps_report.txt -Encoding 
+utf ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~
+    + CategoryInfo         
+     : NotSpecified: (Tra  
+  ceback (most recent ca   
+ ll last)::String) [],     
+RemoteException
+    + FullyQualifiedErrorI 
+   d : NativeCommandError
+ 
+  File "C:\Users\uid1937\Do
+cuments\AI_Project_Shuffle\
+shuffle_soc_factory\discove
+r_apps.py", line 13, in 
+<module>
+    print(f"/api/v1/apps 
+\u2192 {status}, 
+count={len(apps) if 
+isinstance(apps, list) 
+else 'N/A'}")
+    ~~~~~^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^
+  File "C:\Users\uid1937\Ap
+pData\Local\Python\pythonco
+re-3.14-64\Lib\encodings\cp
+1252.py", line 19, in 
+encode
+    return codecs.charmap_e
+ncode(input,self.errors,enc
+oding_table)[0]
+           ~~~~~~~~~~~~~~~~
+~~~~~^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^
+UnicodeEncodeError: 
+'charmap' codec can't 
+encode character '\u2192' 
+in position 13: character 
+maps to <undefined>

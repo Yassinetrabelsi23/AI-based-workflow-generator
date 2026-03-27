@@ -1,0 +1,103 @@
+{
+  "name": "Wazuh Alert Analysis Workflow",
+  "description": "Workflow to analyze Wazuh alerts and respond to malicious files.",
+  "start": "trigger_1",
+  "triggers": [
+    {
+      "id": "trigger_1",
+      "name": "Wazuh Alert Webhook",
+      "app_name": "Shuffle Tools",
+      "app_version": "1.0.0",
+      "trigger_type": "WEBHOOK",
+      "label": "Wazuh Webhook Trigger",
+      "status": "running"
+    }
+  ],
+  "actions": [
+    {
+      "id": "b2f5ff47-8c8d-4e8b-9f9d-8b8d4e8b9f9d",
+      "name": "Extract Hash",
+      "label": "Extract File Hash",
+      "app_name": "Shuffle Tools",
+      "app_version": "1.0.0",
+      "app_id": "",
+      "action": "extract",
+      "parameters": [
+        {
+          "name": "hash",
+          "value": "$exec.body.syscheck.sha256_after"
+        }
+      ],
+      "position": {
+        "x": 0,
+        "y": 200
+      }
+    },
+    {
+      "id": "c4ca4238-a0b9-4e8b-8b9d-8b8d4e8b9f9d",
+      "name": "VirusTotal Lookup",
+      "label": "VirusTotal File Report",
+      "app_name": "VirusTotal",
+      "app_version": "1.0.0",
+      "app_id": "",
+      "action": "Get File Report",
+      "parameters": [
+        {
+          "name": "hash",
+          "value": "$Extract Hash.hash"
+        }
+      ],
+      "position": {
+        "x": 0,
+        "y": 400
+      }
+    },
+    {
+      "id": "eccbc87e-8c8d-4e8b-9f9d-8b8d4e8b9f9d",
+      "name": "Active Response",
+      "label": "Wazuh Active Response",
+      "app_name": "HTTP",
+      "app_version": "1.0.0",
+      "app_id": "",
+      "action": "POST",
+      "parameters": [
+        {
+          "name": "url",
+          "value": "https://10.5.1.115:55000/active-response"
+        },
+        {
+          "name": "body",
+          "value": "{\"command\": \"delete-file\", \"arguments\": [\"$exec.body.syscheck.path\"], \"alert\": {}, \"agent_list\": [\"$exec.body.agent.id\"]}"
+        }
+      ],
+      "position": {
+        "x": 300,
+        "y": 600
+      }
+    }
+  ],
+  "branches": [
+    {
+      "id": "a87ff679-a0b9-4e8b-8b9d-8b8d4e8b9f9d",
+      "source_id": "c4ca4238-a0b9-4e8b-8b9d-8b8d4e8b9f9d",
+      "destination_id": "eccbc87e-8c8d-4e8b-9f9d-8b8d4e8b9f9d",
+      "label": "",
+      "has_errors": false,
+      "conditions": [
+        {
+          "condition": {
+            "source": {
+              "type": "value",
+              "value": "$VirusTotal Lookup.last_analysis_stats.malicious"
+            },
+            "operator": "LARGER_THAN",
+            "destination": {
+              "type": "value",
+              "value": "0"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

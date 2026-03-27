@@ -1,0 +1,136 @@
+{
+  "name": "Wazuh Agent Offline Alert",
+  "description": "Sends an alert via Outlook whenever a Wazuh agent goes offline or stops reporting.",
+  "start": "webhook_trigger",
+  "triggers": [
+    {
+      "id": "fa4c17d5-e722-425e-8409-46efa2022123",
+      "name": "Wazuh Webhook",
+      "app_name": "Webhook",
+      "app_version": "1.0.0",
+      "trigger_type": "WEBHOOK",
+      "label": "Wazuh Alert Webhook",
+      "is_valid": true,
+      "environment": "Shuffle",
+      "status": "running",
+      "image": "",
+      "large_image": ""
+    }
+  ],
+  "actions": [
+    {
+      "id": "f56d5dc2-756c-4294-9c64-117359d6712b",
+      "name": "GET",
+      "label": "Wazuh Authentication",
+      "app_name": "http",
+      "app_version": "1.4.0",
+      "app_id": "4c2060fe-17ec-4486-ae26-fa6918dfb53f",
+      "action": null,
+      "parameters": [
+        {
+          "name": "url",
+          "value": "https://10.5.1.115:55000/security/user/authenticate?raw=true"
+        },
+        {
+          "name": "headers",
+          "value": "Authorization: Basic <base64(user:pass)>"
+        }
+      ],
+      "position": {
+        "x": 0,
+        "y": 200
+      },
+      "is_valid": true,
+      "environment": "Shuffle",
+      "sharing": true,
+      "public": true,
+      "generated": true,
+      "private_id": "4c2060fe-17ec-4486-ae26-fa6918dfb53f",
+      "errors": [],
+      "image": "",
+      "large_image": "",
+      "small_image": "",
+      "authentication_id": "",
+      "reference_url": "",
+      "category": "",
+      "category_label": null,
+      "execution_variable": {
+        "description": "",
+        "id": "",
+        "name": "",
+        "value": ""
+      }
+    },
+    {
+      "id": "15cf5ed6-6b99-49cf-979a-8a7c1bb925f8",
+      "name": "send_email",
+      "label": "Send Outlook Alert",
+      "app_name": "outlook-exchange",
+      "app_version": "1.0.0",
+      "app_id": "2b291eae-3ce8-48ab-afa9-84c0e6bcf3ae",
+      "action": null,
+      "parameters": [
+        {
+          "name": "to",
+          "value": "alert@example.com"
+        },
+        {
+          "name": "subject",
+          "value": "Wazuh Agent Offline Alert"
+        },
+        {
+          "name": "body",
+          "value": "The Wazuh agent with ID $exec.body.agent.id and IP $exec.body.agent.ip has gone offline or stopped reporting."
+        }
+      ],
+      "position": {
+        "x": 0,
+        "y": 400
+      },
+      "is_valid": true,
+      "environment": "Shuffle",
+      "sharing": false,
+      "public": false,
+      "generated": true,
+      "private_id": "2b291eae-3ce8-48ab-afa9-84c0e6bcf3ae",
+      "errors": [],
+      "image": "",
+      "large_image": "",
+      "small_image": "",
+      "authentication_id": "",
+      "reference_url": "",
+      "category": "",
+      "category_label": null,
+      "execution_variable": {
+        "description": "",
+        "id": "",
+        "name": "",
+        "value": ""
+      }
+    }
+  ],
+  "branches": [
+    {
+      "id": "branch_offline_alert",
+      "source_id": "fa4c17d5-e722-425e-8409-46efa2022123",
+      "destination_id": "15cf5ed6-6b99-49cf-979a-8a7c1bb925f8",
+      "label": "Agent Offline",
+      "has_errors": false,
+      "conditions": [
+        {
+          "condition": {
+            "source": {
+              "type": "value",
+              "value": "$exec.body.agent.status"
+            },
+            "operator": "EQUALS",
+            "destination": {
+              "type": "value",
+              "value": "offline"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

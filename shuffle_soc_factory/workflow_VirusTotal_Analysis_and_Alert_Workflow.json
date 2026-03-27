@@ -1,0 +1,168 @@
+{
+  "name": "VirusTotal Analysis and Alert Workflow",
+  "description": "Analyze a file hash with VirusTotal, create an alert in TheHive5 if malicious, and send a notification.",
+  "start": "webhook_trigger",
+  "triggers": [
+    {
+      "id": "bb17d213-8cb6-4279-a1d9-a4189b151e88",
+      "name": "Wazuh Webhook",
+      "app_name": "Webhook",
+      "app_version": "1.0.0",
+      "trigger_type": "WEBHOOK",
+      "label": "Wazuh Alert Webhook",
+      "status": "stopped",
+      "is_valid": true,
+      "environment": "Shuffle"
+    }
+  ],
+  "actions": [
+    {
+      "id": "97f0d53c-eadd-4b92-bbbb-8f4d7e17d93f",
+      "name": "get_a_hash_report_",
+      "label": "Check VirusTotal",
+      "app_name": "Virustotal_v3",
+      "app_version": "1.1.0",
+      "app_id": "fa9d7dd6d5e501798870c9451611817f",
+      "action": "get_a_hash_report_",
+      "parameters": [
+        {
+          "name": "resource",
+          "value": "$exec.body.syscheck.sha256_after"
+        }
+      ],
+      "position": {
+        "x": 0,
+        "y": 200
+      },
+      "is_valid": true,
+      "environment": "Shuffle",
+      "sharing": false,
+      "public": false,
+      "generated": true,
+      "private_id": "fa9d7dd6d5e501798870c9451611817f",
+      "errors": [],
+      "execution_variable": {
+        "description": "",
+        "id": "",
+        "name": "",
+        "value": ""
+      }
+    },
+    {
+      "id": "a3ec5317-c3f6-4525-8d8f-0f8947a91c0a",
+      "name": "post_create_alert",
+      "label": "Create TheHive Alert",
+      "app_name": "TheHive5",
+      "app_version": "1.1.0",
+      "app_id": "52052963557bbecd0d85a92b848da4ca",
+      "action": "post_create_alert",
+      "parameters": [
+        {
+          "name": "title",
+          "value": "Malicious File Detected"
+        },
+        {
+          "name": "description",
+          "value": "A file with hash $exec.body.syscheck.sha256_after was detected as malicious."
+        },
+        {
+          "name": "severity",
+          "value": "high"
+        },
+        {
+          "name": "type",
+          "value": "external"
+        },
+        {
+          "name": "source",
+          "value": "VirusTotal"
+        },
+        {
+          "name": "sourceRef",
+          "value": "$exec.body.syscheck.sha256_after"
+        }
+      ],
+      "position": {
+        "x": 0,
+        "y": 400
+      },
+      "is_valid": true,
+      "environment": "Shuffle",
+      "sharing": false,
+      "public": false,
+      "generated": true,
+      "private_id": "52052963557bbecd0d85a92b848da4ca",
+      "errors": [],
+      "execution_variable": {
+        "description": "",
+        "id": "",
+        "name": "",
+        "value": ""
+      }
+    },
+    {
+      "id": "9eb97d8f-601b-4331-ab48-0bb40f5538ac",
+      "name": "repeat_back_to_me",
+      "label": "Send Notification",
+      "app_name": "Shuffle Tools",
+      "app_version": "1.2.0",
+      "app_id": "0e7cedbb-417a-43b0-b62c-ba36194e0543",
+      "action": "repeat_back_to_me",
+      "parameters": [
+        {
+          "name": "message",
+          "value": "Alert created in TheHive for malicious file with hash $exec.body.syscheck.sha256_after."
+        }
+      ],
+      "position": {
+        "x": 0,
+        "y": 600
+      },
+      "is_valid": true,
+      "environment": "Shuffle",
+      "sharing": true,
+      "public": true,
+      "generated": true,
+      "private_id": "0e7cedbb-417a-43b0-b62c-ba36194e0543",
+      "errors": [],
+      "execution_variable": {
+        "description": "",
+        "id": "",
+        "name": "",
+        "value": ""
+      }
+    }
+  ],
+  "branches": [
+    {
+      "id": "branch_1",
+      "source_id": "97f0d53c-eadd-4b92-bbbb-8f4d7e17d93f",
+      "destination_id": "a3ec5317-c3f6-4525-8d8f-0f8947a91c0a",
+      "label": "malicious",
+      "has_errors": false,
+      "conditions": [
+        {
+          "condition": {
+            "source": {
+              "type": "value",
+              "value": "$get_a_hash_report_.data.attributes.last_analysis_stats.malicious"
+            },
+            "operator": "LARGER_THAN",
+            "destination": {
+              "type": "value",
+              "value": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "branch_2",
+      "source_id": "a3ec5317-c3f6-4525-8d8f-0f8947a91c0a",
+      "destination_id": "9eb97d8f-601b-4331-ab48-0bb40f5538ac",
+      "label": "alert_created",
+      "has_errors": false,
+      "conditions": []
+    }
+  ]
+}

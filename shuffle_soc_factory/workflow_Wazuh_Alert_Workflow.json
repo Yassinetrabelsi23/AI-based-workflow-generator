@@ -1,0 +1,171 @@
+{
+  "name": "Wazuh Alert Workflow",
+  "description": "Workflow to handle Wazuh alerts and perform actions based on VirusTotal analysis.",
+  "start": "webhook_trigger",
+  "triggers": [
+    {
+      "id": "e4f49652-e7bf-44ba-b586-92844bb7a597",
+      "name": "Wazuh Webhook",
+      "app_name": "Webhook",
+      "app_version": "1.0.0",
+      "trigger_type": "WEBHOOK",
+      "label": "Wazuh Alert Webhook",
+      "is_valid": true,
+      "environment": "Shuffle",
+      "status": "running",
+      "image": "",
+      "large_image": ""
+    }
+  ],
+  "actions": [
+    {
+      "id": "74bd972a-e435-4504-92fe-1209f974c33d",
+      "name": "get_a_hash_report_",
+      "label": "Check VirusTotal",
+      "app_name": "Virustotal_v3",
+      "app_version": "1.1.0",
+      "app_id": "fa9d7dd6d5e501798870c9451611817f",
+      "action": null,
+      "parameters": [
+        {
+          "name": "resource",
+          "value": "$exec.body.syscheck.sha256_after"
+        }
+      ],
+      "position": {
+        "x": 0,
+        "y": 200
+      },
+      "is_valid": true,
+      "environment": "Shuffle",
+      "sharing": false,
+      "public": false,
+      "generated": true,
+      "private_id": "fa9d7dd6d5e501798870c9451611817f",
+      "errors": [],
+      "image": "",
+      "large_image": "",
+      "small_image": "",
+      "authentication_id": "",
+      "reference_url": "",
+      "category": "",
+      "category_label": null,
+      "execution_variable": {
+        "description": "",
+        "id": "",
+        "name": "",
+        "value": ""
+      }
+    },
+    {
+      "id": "b2e07474-a739-432d-99e6-871bb1f70c8b",
+      "name": "GET",
+      "label": "Wazuh Authentication",
+      "app_name": "http",
+      "app_version": "1.4.0",
+      "app_id": "4c2060fe-17ec-4486-ae26-fa6918dfb53f",
+      "action": null,
+      "parameters": [
+        {
+          "name": "url",
+          "value": "https://10.5.1.115:55000/security/user/authenticate?raw=true"
+        },
+        {
+          "name": "headers",
+          "value": "Authorization: Basic <base64(user:pass)>"
+        }
+      ],
+      "position": {
+        "x": 0,
+        "y": 400
+      },
+      "is_valid": true,
+      "environment": "Shuffle",
+      "sharing": true,
+      "public": true,
+      "generated": true,
+      "private_id": "4c2060fe-17ec-4486-ae26-fa6918dfb53f",
+      "errors": [],
+      "image": "",
+      "large_image": "",
+      "small_image": "",
+      "authentication_id": "",
+      "reference_url": "",
+      "category": "",
+      "category_label": null,
+      "execution_variable": {
+        "description": "",
+        "id": "",
+        "name": "",
+        "value": ""
+      }
+    },
+    {
+      "id": "b4dbd779-7783-4246-931b-9eae0f822a9a",
+      "name": "put_run_command",
+      "label": "Wazuh Active Response",
+      "app_name": "Wazuh",
+      "app_version": "1.1.0",
+      "app_id": "69fb1e05d07bd1e7dc3abf92317e2d53",
+      "action": null,
+      "parameters": [
+        {
+          "name": "command",
+          "value": "firewall-drop0"
+        },
+        {
+          "name": "alert",
+          "value": "{\"data\":{\"srcip\":\"$exec.all_fields.data.srcip\"}}"
+        }
+      ],
+      "position": {
+        "x": 0,
+        "y": 600
+      },
+      "is_valid": true,
+      "environment": "Shuffle",
+      "sharing": false,
+      "public": false,
+      "generated": true,
+      "private_id": "69fb1e05d07bd1e7dc3abf92317e2d53",
+      "errors": [],
+      "image": "",
+      "large_image": "",
+      "small_image": "",
+      "authentication_id": "",
+      "reference_url": "",
+      "category": "",
+      "category_label": null,
+      "execution_variable": {
+        "description": "",
+        "id": "",
+        "name": "",
+        "value": ""
+      }
+    }
+  ],
+  "branches": [
+    {
+      "id": "branch_1",
+      "source_id": "74bd972a-e435-4504-92fe-1209f974c33d",
+      "destination_id": "b4dbd779-7783-4246-931b-9eae0f822a9a",
+      "label": "malicious",
+      "has_errors": false,
+      "conditions": [
+        {
+          "condition": {
+            "source": {
+              "type": "value",
+              "value": "$get_a_hash_report_.data.attributes.last_analysis_stats.malicious"
+            },
+            "operator": "LARGER_THAN",
+            "destination": {
+              "type": "value",
+              "value": "0"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
